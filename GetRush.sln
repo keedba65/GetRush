@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetRush", "GetRush\GetRush.csproj", "{AF019D31-81A9-41FC-B24D-CACADE2CEEB6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetRush", "GetRush\GetRush.csproj", "{9FBAF393-360A-49C5-A601-F407A603B830}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AF019D31-81A9-41FC-B24D-CACADE2CEEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF019D31-81A9-41FC-B24D-CACADE2CEEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF019D31-81A9-41FC-B24D-CACADE2CEEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF019D31-81A9-41FC-B24D-CACADE2CEEB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FBAF393-360A-49C5-A601-F407A603B830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FBAF393-360A-49C5-A601-F407A603B830}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FBAF393-360A-49C5-A601-F407A603B830}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FBAF393-360A-49C5-A601-F407A603B830}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
