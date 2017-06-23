@@ -27,6 +27,18 @@ namespace GetRush
             InitializeComponent();
         }
 
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            UpdateLastUpdateTextBlock();
+        }
+
+        void UpdateLastUpdateTextBlock()
+        {
+            DateTime dtLast = Settings.LastDownloadTimestamp.ToLocalTime();
+            LastUpdateTextBlock.Text = $"Last Podcast Update: {dtLast.ToString("f")}";
+        }
+
         private async void GetFeedButton_Click(object sender, RoutedEventArgs e)
         {
             RushPodcast podcast = new RushPodcast();
@@ -38,7 +50,7 @@ namespace GetRush
             {
                 feed = (RushFeed)serializer.Deserialize(reader);
             }
-            DateTime dtLast = podcast.GetLastDownloadTimestamp();
+            DateTime dtLast = Settings.LastDownloadTimestamp;
             Stack<RssItem> feedStack = new Stack<RssItem>();
             foreach (var item in feed.Channel.Item)
             {
@@ -52,7 +64,21 @@ namespace GetRush
                 sb.AppendLine($"Got {item.Title}");
                 await podcast.DownloadItem(item);
             }
+            UpdateLastUpdateTextBlock();
             MessageBox.Show(sb.ToString(), "Download complete");
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Instantiate the dialog box
+            SettingsDialog dlg = new SettingsDialog();
+
+            // Configure the dialog box
+            dlg.Owner = this;
+            //dlg.DocumentMargin = this.documentTextBox.Margin;
+
+            // Open the dialog box modally 
+            dlg.ShowDialog();
         }
     }
 }

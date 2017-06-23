@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:GetRush"
         mc:Ignorable="d"
         Title="Get Rush!" Height="350" Width="525">
-    <Grid>
+    <Grid Margin="7">
+        <TextBlock x:Name="LastUpdateTextBlock" Text="Last Podcast Update: 12:00 pm on Mon Jun 19, 2017"/>
         <Button x:Name="GetFeedButton" Content="Get Feed" Click="GetFeedButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="60" FontSize="18" FontWeight="Bold"/>
+        <Button x:Name="SettingsButton" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="SettingsButton_Click">
+            <Image Source="Images/Settings_32x.png" Width="32"/>
+        </Button>
     </Grid>
 </Window>

@@ -12,8 +12,6 @@ namespace GetRush
 {
     class RushPodcast
     {
-        const string url = "http://rss.premiereradio.net/podcast/rushlimb.xml";
-        const string regKey = @"HKEY_CURRENT_USER\SOFTWARE\KeedbaSoft\GetRush";
         string username;
         string password;
 
@@ -21,12 +19,12 @@ namespace GetRush
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                username = Registry.GetValue(regKey, "Username", "") as string;
+                username = Settings.Username;
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                password = Registry.GetValue(regKey, "Password", "") as string;
+                password = Settings.Password;
             }
         }
 
@@ -40,7 +38,7 @@ namespace GetRush
             var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await client.GetAsync(Settings.FeedURL);
             HttpContent content = response.Content;
 
             // ... Check Status Code                                
@@ -58,28 +56,14 @@ namespace GetRush
             return result;
         }
 
-        public DateTime GetLastDownloadTimestamp()
-        {
-            string sCurrentTimestamp = Registry.GetValue(regKey, "LastDownloadTimestamp", "") as string;
-            DateTime dtLast = DateTime.MinValue;
-            if (!string.IsNullOrWhiteSpace(sCurrentTimestamp) &&
-                DateTime.TryParse(sCurrentTimestamp, out dtLast))
-            {
-                // Nothing, just want to parse dtLast
-            }
-            return dtLast;
-        }
-
         private void UpdateLastDownloadTimestamp(RssItem item)
         {
-            var dtLast = GetLastDownloadTimestamp();
-            if(item.PubDate > dtLast)
+            if(item.PubDate > Settings.LastDownloadTimestamp)
             {
-                var enUS = CultureInfo.CreateSpecificCulture("en-US");
-                string sCurrentTimestamp = item.PubDate.ToString("s", enUS);
-                Registry.SetValue(regKey, "LastDownloadTimestamp", sCurrentTimestamp);
+                Settings.LastDownloadTimestamp = item.PubDate;
             }
         }
+
         public async Task DownloadItem(RssItem item)
         {
             string targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
