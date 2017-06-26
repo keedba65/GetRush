@@ -19,6 +19,8 @@ namespace GetRush
     [Serializable]
     public class RssChannel
     {
+        [XmlElement("title")]
+        public string Title { get; set; }
         [XmlElement("item")]
         public List<RssItem> Item { get; set; }
     }

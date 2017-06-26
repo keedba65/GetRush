@@ -39,9 +39,23 @@ namespace GetRush
             LastUpdateTextBlock.Text = $"Last Podcast Update: {dtLast.ToString("f")}";
         }
 
+        void ClearUpdateStatusTextBox()
+        {
+            UpdateStatusTextBox.Text = "";
+        }
+
+        void AppendToUpdateStatusTextBox(string text)
+        {
+            UpdateStatusTextBox.Text += text + "\r\n";
+            UpdateStatusTextBox.ScrollToEnd();
+        }
+
         private async void GetFeedButton_Click(object sender, RoutedEventArgs e)
         {
+            GetFeedButton.IsEnabled = false;
+            ClearUpdateStatusTextBox();
             RushPodcast podcast = new RushPodcast();
+            AppendToUpdateStatusTextBox("Downloading Rush Podcast RSS Feed");
             string result = await podcast.GetPodcast();
             XmlSerializer serializer = new XmlSerializer(typeof(RushFeed));
 
@@ -50,6 +64,7 @@ namespace GetRush
             {
                 feed = (RushFeed)serializer.Deserialize(reader);
             }
+            AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
             DateTime dtLast = Settings.LastDownloadTimestamp;
             Stack<RssItem> feedStack = new Stack<RssItem>();
             foreach (var item in feed.Channel.Item)
@@ -62,10 +77,12 @@ namespace GetRush
             {
                 var item = feedStack.Pop();
                 sb.AppendLine($"Got {item.Title}");
+                AppendToUpdateStatusTextBox($"Downloading {item.Enclosure.Url}");
                 await podcast.DownloadItem(item);
             }
             UpdateLastUpdateTextBlock();
-            MessageBox.Show(sb.ToString(), "Download complete");
+            MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+            GetFeedButton.IsEnabled = true;
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
