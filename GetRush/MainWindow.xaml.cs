@@ -77,7 +77,7 @@ namespace GetRush
             {
                 var item = feedStack.Pop();
                 sb.AppendLine($"Got {item.Title}");
-                AppendToUpdateStatusTextBox($"Downloading {item.Enclosure.Url}");
+                AppendToUpdateStatusTextBox($"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
                 await podcast.DownloadItem(item);
             }
             UpdateLastUpdateTextBlock();
