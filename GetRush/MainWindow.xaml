@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GetRush"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="Get Rush!" Height="350" Width="525">
     <Grid Margin="7">
         <Grid.RowDefinitions>
