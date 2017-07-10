@@ -71,26 +71,32 @@ namespace GetRush
             System.Diagnostics.Debug.WriteLine($"Downloading from {item.Enclosure.Url} to {targetPath}");
             HttpClientHandler handler = new HttpClientHandler();
             HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync(item.Enclosure.Uri);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                using (var reader = await response.Content.ReadAsStreamAsync())
+                HttpResponseMessage response = await client.GetAsync(item.Enclosure.Uri);
+                if (response.IsSuccessStatusCode)
                 {
-                    using (var writer = File.Open(targetPath, FileMode.Create))
+                    using (var reader = await response.Content.ReadAsStreamAsync())
                     {
-                        byte[] buffer = new byte[64 * 1024];
-                        int read = 0;
-                        do
+                        using (var writer = File.Open(targetPath, FileMode.Create))
                         {
-                            read = await reader.ReadAsync(buffer, 0, buffer.Length);
-                            if (read > 0)
+                            byte[] buffer = new byte[64 * 1024];
+                            int read = 0;
+                            do
                             {
-                                await writer.WriteAsync(buffer, 0, read);
-                            }
-                        } while (read > 0);
+                                read = await reader.ReadAsync(buffer, 0, buffer.Length);
+                                if (read > 0)
+                                {
+                                    await writer.WriteAsync(buffer, 0, read);
+                                }
+                            } while (read > 0);
+                        }
                     }
+                    UpdateLastDownloadTimestamp(item);
                 }
-                UpdateLastDownloadTimestamp(item);
+            } catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
     }
