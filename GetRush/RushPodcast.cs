@@ -64,7 +64,7 @@ namespace GetRush
             }
         }
 
-        public async Task DownloadItem(RssItem item)
+        public async Task<bool> DownloadItem(RssItem item)
         {
             string targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
             string targetPath = Path.Combine(targetDir, item.Enclosure.filename);
@@ -93,11 +93,13 @@ namespace GetRush
                         }
                     }
                     UpdateLastDownloadTimestamp(item);
+                    return true;
                 }
             } catch(Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
             }
+            return false;
         }
     }
 }

@@ -73,15 +73,33 @@ namespace GetRush
                 feedStack.Push(item);
             }
             StringBuilder sb = new StringBuilder();
-            while (feedStack.Count > 0)
+            bool downloadFailed = false;
+            while (feedStack.Count > 0 && !downloadFailed)
             {
                 var item = feedStack.Pop();
                 sb.AppendLine($"Got {item.Title}");
-                AppendToUpdateStatusTextBox($"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
-                await podcast.DownloadItem(item);
+                var retries = 3;
+                do
+                {
+                    --retries;
+                    AppendToUpdateStatusTextBox($"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
+                    var success = await podcast.DownloadItem(item);
+                    if (success) { break; }
+                    if (retries > 0)
+                    {
+                        AppendToUpdateStatusTextBox($"Download failed.  retrying in 60 seconds...");
+                        await Task.Delay(60 * 1000);
+                    } else
+                    {
+                        downloadFailed = true;
+                    }
+                } while (retries > 0);
             }
-            UpdateLastUpdateTextBlock();
-            MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+            if (!downloadFailed)
+            {
+                UpdateLastUpdateTextBlock();
+                MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+            }
             GetFeedButton.IsEnabled = true;
         }
 
