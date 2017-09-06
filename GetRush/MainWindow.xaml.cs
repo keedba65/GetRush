@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using System.Xml.Serialization;
 
 namespace GetRush
@@ -31,20 +32,27 @@ namespace GetRush
         {
             base.OnInitialized(e);
             UpdateLastUpdateTextBlock();
+            var dt = new DispatcherTimer() {Interval = TimeSpan.FromMilliseconds(1000), IsEnabled = true};
+            dt.Tick += (o, args) =>
+            {
+                dt.Stop();
+                GetFeedMethod();
+            };
+            dt.Start();
         }
 
-        void UpdateLastUpdateTextBlock()
+        private void UpdateLastUpdateTextBlock()
         {
-            DateTime dtLast = Settings.LastDownloadTimestamp.ToLocalTime();
-            LastUpdateTextBlock.Text = $"Last Podcast Update: {dtLast.ToString("f")}";
+            var dtLast = Settings.LastDownloadTimestamp.ToLocalTime();
+            LastUpdateTextBlock.Text = $"Last Podcast Update: {dtLast:f}";
         }
 
-        void ClearUpdateStatusTextBox()
+        private void ClearUpdateStatusTextBox()
         {
             UpdateStatusTextBox.Text = "";
         }
 
-        void AppendToUpdateStatusTextBox(string text)
+        private void AppendToUpdateStatusTextBox(string text)
         {
             UpdateStatusTextBox.Text += text + "\r\n";
             UpdateStatusTextBox.ScrollToEnd();
@@ -52,28 +60,38 @@ namespace GetRush
 
         private async void GetFeedButton_Click(object sender, RoutedEventArgs e)
         {
+            await GetTheFeed();
+        }
+
+        private async void GetFeedMethod()
+        {
+            await GetTheFeed();
+        }
+
+        private async Task GetTheFeed()
+        { 
             GetFeedButton.IsEnabled = false;
             ClearUpdateStatusTextBox();
-            RushPodcast podcast = new RushPodcast();
+            var podcast = new RushPodcast();
             AppendToUpdateStatusTextBox("Downloading Rush Podcast RSS Feed");
-            string result = await podcast.GetPodcast();
-            XmlSerializer serializer = new XmlSerializer(typeof(RushFeed));
+            var result = await podcast.GetPodcast();
+            var serializer = new XmlSerializer(typeof(RushFeed));
 
             RushFeed feed = null;
-            using (StringReader reader = new StringReader(result))
+            using (var reader = new StringReader(result))
             {
                 feed = (RushFeed)serializer.Deserialize(reader);
             }
             AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
-            DateTime dtLast = Settings.LastDownloadTimestamp;
-            Stack<RssItem> feedStack = new Stack<RssItem>();
+            var dtLast = Settings.LastDownloadTimestamp;
+            var feedStack = new Stack<RssItem>();
             foreach (var item in feed.Channel.Item)
             {
                 if (item.PubDate <= dtLast) break;
                 feedStack.Push(item);
             }
-            StringBuilder sb = new StringBuilder();
-            bool downloadFailed = false;
+            var sb = new StringBuilder();
+            var downloadFailed = false;
             while (feedStack.Count > 0 && !downloadFailed)
             {
                 var item = feedStack.Pop();
@@ -106,10 +124,9 @@ namespace GetRush
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             // Instantiate the dialog box
-            SettingsDialog dlg = new SettingsDialog();
+            var dlg = new SettingsDialog {Owner = this};
 
             // Configure the dialog box
-            dlg.Owner = this;
             //dlg.DocumentMargin = this.documentTextBox.Margin;
 
             // Open the dialog box modally 
