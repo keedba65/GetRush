@@ -6,8 +6,14 @@
         xmlns:local="clr-namespace:GetRush"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Get Rush!" Height="350" Width="525">
+        Title="Get Rush!" Height="350" Width="525" Icon="Images/Creative-Freedom-Shimmer-Microphone.ico">
     <Grid Margin="7">
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FF0A0A0A" Offset="1"/>
+                <GradientStop Color="#FFE8E8E8"/>
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
@@ -19,15 +25,26 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" x:Name="LastUpdateTextBlock" Text="Last Podcast Update: 12:00 pm on Mon Jun 19, 2017"/>
-            <TextBox Grid.Row="1" Margin="0,5,0,0" x:Name="UpdateStatusTextBox" IsReadOnly="True" Height="75" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" BorderThickness="0"/>
+            <TextBox Grid.Row="1" Margin="0,5,0,0" x:Name="UpdateStatusTextBox" IsReadOnly="True" Height="75" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
         </Grid>
         <Grid Grid.Row="2">
-            <Button x:Name="SettingsButton" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="SettingsButton_Click">
+            <Button x:Name="SettingsButton" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="SettingsButton_Click" Background="Transparent" BorderBrush="Transparent" Margin="5">
                 <Image Source="Images/Settings_32x.png" Width="32"/>
             </Button>
         </Grid>
         <Grid Grid.Row="0" Grid.RowSpan="3">
-            <Button x:Name="GetFeedButton" Content="Get Feed" Click="GetFeedButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="60" FontSize="18" FontWeight="Bold"/>
+            <Button x:Name="GetFeedButton" Content="Get Feed" Click="GetFeedButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="60" FontSize="18" FontWeight="Bold"
+                    BorderBrush="#FFF18E23">
+                <Button.Background>
+                    <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                        <GradientStop Color="#FFFFFFFF" Offset="1" />
+                        <GradientStop Color="#FFFFD197" Offset="0.459" />
+                        <GradientStop Color="#FFFFDBAD" Offset="0" />
+                        <GradientStop Color="#FFF18E23" Offset="0.508" />
+                        <GradientStop Color="#FFF9D4AC" Offset="0.954" />
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
         </Grid>
     </Grid>
 </Window>
