@@ -11,7 +11,7 @@ namespace GetRush
 {
     class Settings
     {
-        const string url = "http://rss.premiereradio.net/podcast/rushlimb.xml";
+        const string url = "https://rss.premiereradio.net/podcast/rushlimb.xml";
         const string regKey = @"HKEY_CURRENT_USER\SOFTWARE\KeedbaSoft\GetRush";
 
         // abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ

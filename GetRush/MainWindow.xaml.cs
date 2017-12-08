@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -75,48 +76,60 @@ namespace GetRush
             var podcast = new RushPodcast();
             AppendToUpdateStatusTextBox("Downloading Rush Podcast RSS Feed");
             var result = await podcast.GetPodcast();
-            var serializer = new XmlSerializer(typeof(RushFeed));
+            try
+            {
+                var serializer = new XmlSerializer(typeof(RushFeed));
 
-            RushFeed feed = null;
-            using (var reader = new StringReader(result))
-            {
-                feed = (RushFeed)serializer.Deserialize(reader);
-            }
-            AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
-            var dtLast = Settings.LastDownloadTimestamp;
-            var feedStack = new Stack<RssItem>();
-            foreach (var item in feed.Channel.Item)
-            {
-                if (item.PubDate <= dtLast) break;
-                feedStack.Push(item);
-            }
-            var sb = new StringBuilder();
-            var downloadFailed = false;
-            while (feedStack.Count > 0 && !downloadFailed)
-            {
-                var item = feedStack.Pop();
-                sb.AppendLine($"Got {item.Title}");
-                var retries = 3;
-                do
+                RushFeed feed = null;
+                using (var reader = new StringReader(result))
                 {
-                    --retries;
-                    AppendToUpdateStatusTextBox($"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
-                    var success = await podcast.DownloadItem(item);
-                    if (success) { break; }
-                    if (retries > 0)
+                    feed = (RushFeed) serializer.Deserialize(reader);
+                }
+                AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
+                var dtLast = Settings.LastDownloadTimestamp;
+                var feedStack = new Stack<RssItem>();
+                foreach (var item in feed.Channel.Item)
+                {
+                    if (item.PubDate <= dtLast) break;
+                    feedStack.Push(item);
+                }
+                var sb = new StringBuilder();
+                var downloadFailed = false;
+                while (feedStack.Count > 0 && !downloadFailed)
+                {
+                    var item = feedStack.Pop();
+                    sb.AppendLine($"Got {item.Title}");
+                    var retries = 3;
+                    do
                     {
-                        AppendToUpdateStatusTextBox($"Download failed.  retrying in 60 seconds...");
-                        await Task.Delay(60 * 1000);
-                    } else
-                    {
-                        downloadFailed = true;
-                    }
-                } while (retries > 0);
+                        --retries;
+                        AppendToUpdateStatusTextBox(
+                            $"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
+                        var success = await podcast.DownloadItem(item);
+                        if (success)
+                        {
+                            break;
+                        }
+                        if (retries > 0)
+                        {
+                            AppendToUpdateStatusTextBox($"Download failed.  retrying in 60 seconds...");
+                            await Task.Delay(60 * 1000);
+                        }
+                        else
+                        {
+                            downloadFailed = true;
+                        }
+                    } while (retries > 0);
+                }
+                if (!downloadFailed)
+                {
+                    UpdateLastUpdateTextBlock();
+                    MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+                }
             }
-            if (!downloadFailed)
+            catch (Exception ex)
             {
-                UpdateLastUpdateTextBlock();
-                MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+                Debug.WriteLine(ex);
             }
             GetFeedButton.IsEnabled = true;
         }
