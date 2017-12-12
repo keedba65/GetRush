@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
+using NLog;
 
 namespace GetRush
 {
@@ -24,8 +25,10 @@ namespace GetRush
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Logger _mLogger;
         public MainWindow()
         {
+            _mLogger = LogManager.GetLogger("MainWindow");
             InitializeComponent();
         }
 
@@ -46,15 +49,18 @@ namespace GetRush
         {
             var dtLast = Settings.LastDownloadTimestamp.ToLocalTime();
             LastUpdateTextBlock.Text = $"Last Podcast Update: {dtLast:f}";
+            _mLogger.Info($"Setting Last Podcast Update to {dtLast:f}");
         }
 
         private void ClearUpdateStatusTextBox()
         {
+            _mLogger.Info("Clearing update status text");
             UpdateStatusTextBox.Text = "";
         }
 
         private void AppendToUpdateStatusTextBox(string text)
         {
+            _mLogger.Info(text);
             UpdateStatusTextBox.Text += text + "\r\n";
             UpdateStatusTextBox.ScrollToEnd();
         }
@@ -71,6 +77,7 @@ namespace GetRush
 
         private async Task GetTheFeed()
         { 
+            _mLogger.Trace("Entering GetTheFeed");
             GetFeedButton.IsEnabled = false;
             ClearUpdateStatusTextBox();
             var podcast = new RushPodcast();
@@ -78,6 +85,7 @@ namespace GetRush
             var result = await podcast.GetPodcast();
             try
             {
+                _mLogger.Info($"Feed returned:\n {result}");
                 var serializer = new XmlSerializer(typeof(RushFeed));
 
                 RushFeed feed = null;
@@ -130,6 +138,7 @@ namespace GetRush
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                _mLogger.Debug(ex);
             }
             GetFeedButton.IsEnabled = true;
         }
