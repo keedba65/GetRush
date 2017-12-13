@@ -1,18 +1,15 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GetRush
 {
-    class Settings
+    internal class Settings
     {
-        const string url = "https://rss.premiereradio.net/podcast/rushlimb.xml";
-        const string regKey = @"HKEY_CURRENT_USER\SOFTWARE\KeedbaSoft\GetRush";
+        private const string Url = "https://rss.premiereradio.net/podcast/rushlimb.xml";
+        private const string RegKey = @"HKEY_CURRENT_USER\SOFTWARE\KeedbaSoft\GetRush";
 
         // abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
         //           111111111122222222223333333333444444444455
@@ -21,14 +18,14 @@ namespace GetRush
         // 421 3 1  2  
         // 308778210067
         // 43, 20, 18, 7, 37, 8, 12, 1, 0, 20, 6, 7
-        static byte[] s_aditionalEntropy = { 43, 20, 18, 7, 37, 8, 12, 1, 0, 20, 6, 7 };
+        private static readonly byte[] SAditionalEntropy = { 43, 20, 18, 7, 37, 8, 12, 1, 0, 20, 6, 7 };
 
         private static string Protect(string strData)
         {
-            byte[] data = Encoding.UTF8.GetBytes(strData);
+            var data = Encoding.UTF8.GetBytes(strData);
             try
             {
-                var encodedData = ProtectedData.Protect(data, s_aditionalEntropy, DataProtectionScope.CurrentUser);
+                var encodedData = ProtectedData.Protect(data, SAditionalEntropy, DataProtectionScope.CurrentUser);
                 return Convert.ToBase64String(encodedData);
             }
             catch
@@ -42,7 +39,7 @@ namespace GetRush
             var encodedData = Convert.FromBase64String(encodedStringData);
             try
             {
-                var data = ProtectedData.Unprotect(encodedData, s_aditionalEntropy, DataProtectionScope.CurrentUser);
+                var data = ProtectedData.Unprotect(encodedData, SAditionalEntropy, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(data);
             }
             catch
@@ -51,24 +48,19 @@ namespace GetRush
             }
         }
 
-        public static string FeedURL { get { return url; } }
+        public static string FeedUrl => Url;
+
         public static string Username
         {
-            get
-            {
-                return Registry.GetValue(regKey, "Username", "") as string;
-            }
-            set
-            {
-                Registry.SetValue(regKey, "Username", value);
-            }
+            get => Registry.GetValue(RegKey, "Username", "") as string;
+            set => Registry.SetValue(RegKey, "Username", value);
         }
 
         public static string Password
         {
             get
             {
-                var pwd = Registry.GetValue(regKey, "Password", "") as string;
+                var pwd = Registry.GetValue(RegKey, "Password", "") as string;
                 if(!string.IsNullOrEmpty(pwd))
                 {
                     pwd = UnProtect(pwd);
@@ -82,7 +74,7 @@ namespace GetRush
                 {
                     pwd = Protect(pwd);
                 }
-                Registry.SetValue(regKey, "Password", pwd);
+                Registry.SetValue(RegKey, "Password", pwd ?? "");
             }
         }
 
@@ -90,8 +82,8 @@ namespace GetRush
         {
             get
             {
-                string sCurrentTimestamp = Registry.GetValue(regKey, "LastDownloadTimestamp", "") as string;
-                DateTime dtLast = DateTime.MinValue;
+                var sCurrentTimestamp = Registry.GetValue(RegKey, "LastDownloadTimestamp", "") as string;
+                var dtLast = DateTime.MinValue;
                 if (!string.IsNullOrWhiteSpace(sCurrentTimestamp) &&
                     DateTime.TryParse(sCurrentTimestamp, out dtLast))
                 {
@@ -101,9 +93,9 @@ namespace GetRush
             }
             set
             {
-                var enUS = CultureInfo.CreateSpecificCulture("en-US");
-                string sCurrentTimestamp = value.ToString("s", enUS);
-                Registry.SetValue(regKey, "LastDownloadTimestamp", sCurrentTimestamp);
+                var enUs = CultureInfo.CreateSpecificCulture("en-US");
+                var sCurrentTimestamp = value.ToString("s", enUs);
+                Registry.SetValue(RegKey, "LastDownloadTimestamp", sCurrentTimestamp);
             }
         }
     }

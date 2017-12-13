@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
 using NLog;
@@ -25,7 +15,7 @@ namespace GetRush
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Logger _mLogger;
+        private readonly Logger _mLogger;
         public MainWindow()
         {
             _mLogger = LogManager.GetLogger("MainWindow");
@@ -75,6 +65,25 @@ namespace GetRush
             await GetTheFeed();
         }
 
+        private async Task SavePodcastRss(string rssFeed)
+        {
+            var path =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\KeedbaSoft\\logs\\Feeds";
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            var currentTime = DateTime.Now;
+
+            const string dtFormat = "yyyy-MM-ddTHH.mm.ss";
+            var filename = $"{currentTime.ToString(dtFormat)}RushFeed.xml";
+            using (TextWriter writer = new StreamWriter(Path.Combine(path, filename)))
+            {
+                await writer.WriteAsync(rssFeed);
+                _mLogger.Debug($"Saved RSS feed XML to {filename}");
+            }
+        }
+
         private async Task GetTheFeed()
         { 
             _mLogger.Trace("Entering GetTheFeed");
@@ -85,7 +94,6 @@ namespace GetRush
             var result = await podcast.GetPodcast();
             try
             {
-                _mLogger.Info($"Feed returned:\n {result}");
                 var serializer = new XmlSerializer(typeof(RushFeed));
 
                 RushFeed feed = null;
@@ -94,6 +102,7 @@ namespace GetRush
                     feed = (RushFeed) serializer.Deserialize(reader);
                 }
                 AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
+                await SavePodcastRss(result);
                 var dtLast = Settings.LastDownloadTimestamp;
                 var feedStack = new Stack<RssItem>();
                 foreach (var item in feed.Channel.Item)
@@ -137,8 +146,9 @@ namespace GetRush
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-                _mLogger.Debug(ex);
+                _mLogger.Error($"podcast.GetPodcast returned:\n {result}");
+
+                _mLogger.Error(ex);
             }
             GetFeedButton.IsEnabled = true;
         }

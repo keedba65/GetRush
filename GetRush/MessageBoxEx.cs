@@ -145,6 +145,9 @@ namespace GetRush
         [DllImport("user32.dll")]
         public static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
 
+        [DllImport("kernel32.dll")]
+        public static extern int GetCurrentThreadId();
+
         [StructLayout(LayoutKind.Sequential)]
         public struct CWPRETSTRUCT
         {
@@ -157,7 +160,7 @@ namespace GetRush
 
         static MessageBoxEx()
         {
-            _hookProc = new HookProc(MessageBoxHookProc);
+            _hookProc = MessageBoxHookProc;
             _hHook = IntPtr.Zero;
         }
 
@@ -170,7 +173,8 @@ namespace GetRush
 
             if (_owner != null)
             {
-                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
+                //_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
+                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, GetCurrentThreadId());
             }
         }
 
@@ -181,8 +185,8 @@ namespace GetRush
                 return CallNextHookEx(_hHook, nCode, wParam, lParam);
             }
 
-            CWPRETSTRUCT msg = (CWPRETSTRUCT)Marshal.PtrToStructure(lParam, typeof(CWPRETSTRUCT));
-            IntPtr hook = _hHook;
+            var msg = (CWPRETSTRUCT)Marshal.PtrToStructure(lParam, typeof(CWPRETSTRUCT));
+            var hook = _hHook;
 
             if (msg.message == (int)CbtHookAction.HCBT_ACTIVATE)
             {
