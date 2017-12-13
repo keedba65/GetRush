@@ -7,42 +7,49 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 
 namespace GetRush
 {
     class RushPodcast
     {
-        string username;
-        string password;
+        private string _sUsername;
+        private string _sPassword;
+        private Logger _mLogger;
 
-        void GetCredentials()
+        public RushPodcast()
         {
-            if (string.IsNullOrWhiteSpace(username))
+            _mLogger = LogManager.GetLogger("RushPodcast");
+        }
+
+        private void GetCredentials()
+        {
+            if (string.IsNullOrWhiteSpace(_sUsername))
             {
-                username = Settings.Username;
+                _sUsername = Settings.Username;
             }
 
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(_sPassword))
             {
-                password = Settings.Password;
+                _sPassword = Settings.Password;
             }
         }
 
         public async Task<string> GetPodcast()
         {
             GetCredentials();
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return "";
+            if (string.IsNullOrWhiteSpace(_sUsername) || string.IsNullOrWhiteSpace(_sPassword)) return "";
 
             HttpClientHandler handler = new HttpClientHandler();
             HttpClient client = new HttpClient();
-            var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
+            var byteArray = Encoding.ASCII.GetBytes($"{_sUsername}:{_sPassword}");
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
             HttpResponseMessage response = await client.GetAsync(Settings.FeedURL);
             HttpContent content = response.Content;
 
             // ... Check Status Code                                
-            System.Diagnostics.Debug.WriteLine("Response StatusCode: " + (int)response.StatusCode);
+            _mLogger.Info("Response StatusCode: " + (int)response.StatusCode);
 
             // ... Read the string.
             string result = await content.ReadAsStringAsync();
@@ -51,7 +58,7 @@ namespace GetRush
             if (result != null &&
             result.Length >= 50)
             {
-                System.Diagnostics.Debug.WriteLine(result.Substring(0, 50) + "...");
+                _mLogger.Info(result.Substring(0, 50) + "...");
             }
             return result;
         }
@@ -68,7 +75,7 @@ namespace GetRush
         {
             string targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
             string targetPath = Path.Combine(targetDir, item.Enclosure.filename);
-            System.Diagnostics.Debug.WriteLine($"Downloading from {item.Enclosure.Url} to {targetPath}");
+            _mLogger.Info($"Downloading from {item.Enclosure.Url} to {targetPath}");
             HttpClientHandler handler = new HttpClientHandler();
             HttpClient client = new HttpClient();
             try
@@ -97,7 +104,7 @@ namespace GetRush
                 }
             } catch(Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                _mLogger.Error(ex);
             }
             return false;
         }
