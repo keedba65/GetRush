@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
 using NLog;
@@ -25,7 +15,7 @@ namespace GetRush
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Logger _mLogger;
+        private readonly Logger _mLogger;
         public MainWindow()
         {
             _mLogger = LogManager.GetLogger("MainWindow");
@@ -77,7 +67,6 @@ namespace GetRush
 
         private async Task SavePodcastRss(string rssFeed)
         {
-            // ${environment:LOCALAPPDATA}/KeedbaSoft/logs
             var path =
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\KeedbaSoft\\logs\\Feeds";
             if (!Directory.Exists(path))
@@ -85,10 +74,10 @@ namespace GetRush
                 Directory.CreateDirectory(path);
             }
             var currentTime = DateTime.Now;
-            // 2009-06-15T13:45:30
-            var dtFormat = "yyyy-MM-ddTHH.mm.ss";
+
+            const string dtFormat = "yyyy-MM-ddTHH.mm.ss";
             var filename = $"{currentTime.ToString(dtFormat)}RushFeed.xml";
-            using (TextWriter writer = new StreamWriter(System.IO.Path.Combine(path, filename)))
+            using (TextWriter writer = new StreamWriter(Path.Combine(path, filename)))
             {
                 await writer.WriteAsync(rssFeed);
                 _mLogger.Debug($"Saved RSS feed XML to {filename}");

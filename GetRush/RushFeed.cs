@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace GetRush
@@ -39,7 +36,7 @@ namespace GetRush
         {
             get
             {
-                DateTime result = DateTime.MinValue;
+                var result = DateTime.MinValue;
                 var bHasUtc = PubDateText.Contains("UTC");
                 var bHasPzzzz = PubDateText.Contains("+0000");
                 if (bHasUtc) result = ConvertPubDateUtcFormat();
@@ -50,7 +47,7 @@ namespace GetRush
 
         private DateTime ConvertPubDatePzzzzFormat()
         {
-            string dateText = PubDateText;
+            var dateText = PubDateText;
             var index = dateText.IndexOf("+0000", StringComparison.Ordinal);
             dateText = dateText.Substring(0, index - 1);
             // Time already in UTC!!!
@@ -59,23 +56,20 @@ namespace GetRush
         }
         private DateTime ConvertPubDateUtcFormat()
         {
-            CultureInfo enUs = new CultureInfo("en-US");
+            var enUs = new CultureInfo("en-US");
             const string dtFormat = "ddd, d MMM yyyy hh:mm:ss UTC";
             var succeeded = DateTime.TryParseExact(PubDateText, dtFormat, enUs, DateTimeStyles.AllowWhiteSpaces ,out var result);
-            if (succeeded)
-            {
-                // Rush timestamp is actually 1 hour after the end of the show (e.g. 3:00 pm is given as 4:00)
-                // Adjust to end of the show (Rush shows are noon to 3pm EST (12:00:00-15:00:00))
-                result -= TimeSpan.FromHours(1);
-                // Rush UTC is actually US Eastern Local time PM without designater
-                // First update to 24 hour clock (e.g. 3:00:00 should be 15:00:00)
-                result += TimeSpan.FromHours(12);
-                // Next adjust to UTC, from ET (where Rush broadcasts from)
-                var etZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-                result = TimeZoneInfo.ConvertTime(result, etZone, TimeZoneInfo.Utc);
-                return result;
-            }
-            return DateTime.MinValue;
+            if (!succeeded) return DateTime.MinValue;
+            // Rush timestamp is actually 1 hour after the end of the show (e.g. 3:00 pm is given as 4:00)
+            // Adjust to end of the show (Rush shows are noon to 3pm EST (12:00:00-15:00:00))
+            result -= TimeSpan.FromHours(1);
+            // Rush UTC is actually US Eastern Local time PM without designater
+            // First update to 24 hour clock (e.g. 3:00:00 should be 15:00:00)
+            result += TimeSpan.FromHours(12);
+            // Next adjust to UTC, from ET (where Rush broadcasts from)
+            var etZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            result = TimeZoneInfo.ConvertTime(result, etZone, TimeZoneInfo.Utc);
+            return result;
         }
     }
 
@@ -90,24 +84,9 @@ namespace GetRush
         [XmlIgnore]
         private Uri _uri;
         [XmlIgnore]
-        public Uri Uri
-        {
-            get
-            {
-                if(_uri == null)
-                {
-                    _uri = new Uri(Url, UriKind.Absolute);
-                }
-                return _uri;
-            }
-        }
+        public Uri Uri => _uri ?? (_uri = new Uri(Url, UriKind.Absolute));
+
         [XmlIgnore]
-        public string filename
-        {
-            get
-            {
-                return System.IO.Path.GetFileName(Uri.LocalPath);
-            }
-        }
+        public string Filename => System.IO.Path.GetFileName(Uri.LocalPath);
     }
 }

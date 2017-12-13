@@ -1,9 +1,5 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +7,11 @@ using NLog;
 
 namespace GetRush
 {
-    class RushPodcast
+    internal class RushPodcast
     {
         private string _sUsername;
         private string _sPassword;
-        private Logger _mLogger;
+        private readonly Logger _mLogger;
 
         public RushPodcast()
         {
@@ -40,27 +36,28 @@ namespace GetRush
             GetCredentials();
             if (string.IsNullOrWhiteSpace(_sUsername) || string.IsNullOrWhiteSpace(_sPassword)) return "";
 
-            HttpClientHandler handler = new HttpClientHandler();
-            HttpClient client = new HttpClient();
-            var byteArray = Encoding.ASCII.GetBytes($"{_sUsername}:{_sPassword}");
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-            HttpResponseMessage response = await client.GetAsync(Settings.FeedURL);
-            HttpContent content = response.Content;
-
-            // ... Check Status Code                                
-            _mLogger.Info("Response StatusCode: " + (int)response.StatusCode);
-
-            // ... Read the string.
-            string result = await content.ReadAsStringAsync();
-
-            // ... Display the result.
-            if (result != null &&
-            result.Length >= 50)
+            using (var client = new HttpClient())
             {
-                _mLogger.Info(result.Substring(0, 50) + "...");
+                var byteArray = Encoding.ASCII.GetBytes($"{_sUsername}:{_sPassword}");
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+
+                var response = await client.GetAsync(Settings.FeedUrl);
+                var content = response.Content;
+
+                // ... Check Status Code                                
+                _mLogger.Info("Response StatusCode: " + (int) response.StatusCode);
+
+                // ... Read the string.
+                string result = await content.ReadAsStringAsync();
+
+                // ... Display the result.
+                if (result != null && result.Length >= 50)
+                {
+                    _mLogger.Info(result.Substring(0, 50) + "...");
+                }
+                return result;
             }
-            return result;
         }
 
         private void UpdateLastDownloadTimestamp(RssItem item)
@@ -73,40 +70,42 @@ namespace GetRush
 
         public async Task<bool> DownloadItem(RssItem item)
         {
-            string targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-            string targetPath = Path.Combine(targetDir, item.Enclosure.filename);
+            var targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+            var targetPath = Path.Combine(targetDir, item.Enclosure.Filename);
             _mLogger.Info($"Downloading from {item.Enclosure.Url} to {targetPath}");
-            HttpClientHandler handler = new HttpClientHandler();
-            HttpClient client = new HttpClient();
-            try
+            using (var client = new HttpClient())
             {
-                HttpResponseMessage response = await client.GetAsync(item.Enclosure.Uri);
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    using (var reader = await response.Content.ReadAsStreamAsync())
+                    var response = await client.GetAsync(item.Enclosure.Uri);
+                    if (response.IsSuccessStatusCode)
                     {
-                        using (var writer = File.Open(targetPath, FileMode.Create))
+                        using (var reader = await response.Content.ReadAsStreamAsync())
                         {
-                            byte[] buffer = new byte[64 * 1024];
-                            int read = 0;
-                            do
+                            using (var writer = File.Open(targetPath, FileMode.Create))
                             {
-                                read = await reader.ReadAsync(buffer, 0, buffer.Length);
-                                if (read > 0)
+                                var buffer = new byte[64 * 1024];
+                                var read = 0;
+                                do
                                 {
-                                    await writer.WriteAsync(buffer, 0, read);
-                                }
-                            } while (read > 0);
+                                    read = await reader.ReadAsync(buffer, 0, buffer.Length);
+                                    if (read > 0)
+                                    {
+                                        await writer.WriteAsync(buffer, 0, read);
+                                    }
+                                } while (read > 0);
+                            }
                         }
+                        UpdateLastDownloadTimestamp(item);
+                        return true;
                     }
-                    UpdateLastDownloadTimestamp(item);
-                    return true;
                 }
-            } catch(Exception ex)
-            {
-                _mLogger.Error(ex);
+                catch (Exception ex)
+                {
+                    _mLogger.Error(ex);
+                }
+                return false;
             }
-            return false;
         }
     }
 }
