@@ -104,44 +104,64 @@ namespace GetRush
                 AppendToUpdateStatusTextBox($"Got Rush Podcast RSS Feed \"{feed.Channel.Title}\"");
                 await SavePodcastRss(result);
                 var dtLast = Settings.LastDownloadTimestamp;
-                var feedStack = new Stack<RssItem>();
+                var feedList = new List<RssItem>();
                 foreach (var item in feed.Channel.Item)
                 {
                     if (item.PubDate <= dtLast) break;
-                    feedStack.Push(item);
+                    feedList.Add(item);
                 }
-                var sb = new StringBuilder();
-                var downloadFailed = false;
-                while (feedStack.Count > 0 && !downloadFailed)
+
+                if (feedList.Count > 0)
                 {
-                    var item = feedStack.Pop();
-                    sb.AppendLine($"Got {item.Title}");
-                    var retries = 3;
-                    do
+                    feedList.Sort((f1,f2)=>string.Compare(f1.Title, f2.Title, StringComparison.InvariantCulture));
+
+                    feedList.Sort((f1, f2) =>
                     {
-                        --retries;
-                        AppendToUpdateStatusTextBox(
-                            $"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
-                        var success = await podcast.DownloadItem(item);
-                        if (success)
+                        var f1d = DateTime.Parse(f1.PubDate.ToShortDateString());
+                        var f2d = DateTime.Parse(f2.PubDate.ToShortDateString());
+                        if (f1d == f2d) return 0;
+                        if (f1d < f2d) return -1;
+                        return 1;
+                    });
+                    feedList.Reverse();
+                    var feedStack = new Stack<RssItem>();
+                    foreach (var item in feedList)
+                    {
+                        feedStack.Push(item);
+                    }
+                    var sb = new StringBuilder();
+                    var downloadFailed = false;
+                    while (feedStack.Count > 0 && !downloadFailed)
+                    {
+                        var item = feedStack.Pop();
+                        sb.AppendLine($"Got {item.Title}");
+                        var retries = 3;
+                        do
                         {
-                            break;
-                        }
-                        if (retries > 0)
-                        {
-                            AppendToUpdateStatusTextBox($"Download failed.  retrying in 60 seconds...");
-                            await Task.Delay(60 * 1000);
-                        }
-                        else
-                        {
-                            downloadFailed = true;
-                        }
-                    } while (retries > 0);
-                }
-                if (!downloadFailed)
-                {
-                    UpdateLastUpdateTextBlock();
-                    MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+                            --retries;
+                            AppendToUpdateStatusTextBox(
+                                $"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
+                            var success = await podcast.DownloadItem(item);
+                            if (success)
+                            {
+                                break;
+                            }
+                            if (retries > 0)
+                            {
+                                AppendToUpdateStatusTextBox($"Download failed.  retrying in 60 seconds...");
+                                await Task.Delay(60 * 1000);
+                            }
+                            else
+                            {
+                                downloadFailed = true;
+                            }
+                        } while (retries > 0);
+                    }
+                    if (!downloadFailed)
+                    {
+                        UpdateLastUpdateTextBlock(); 
+                        MessageBoxEx.Show(this, sb.ToString(), "Download complete");
+                    }
                 }
             }
             catch (Exception ex)
