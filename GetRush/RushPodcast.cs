@@ -71,7 +71,7 @@ namespace GetRush
         public async Task<bool> DownloadItem(RssItem item)
         {
             var targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-            var targetPath = Path.Combine(targetDir, item.Enclosure.Filename);
+            var targetPath = Path.Combine(targetDir, $"Rush Limbaugh - {item.Title}{Path.GetExtension(item.Enclosure.Filename)}").Replace(",","");
             _mLogger.Info($"Downloading from {item.Enclosure.Url} to {targetPath}");
             using (var client = new HttpClient())
             {

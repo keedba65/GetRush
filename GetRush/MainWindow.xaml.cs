@@ -139,8 +139,10 @@ namespace GetRush
                         do
                         {
                             --retries;
-                            AppendToUpdateStatusTextBox(
-                                $"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
+                            //AppendToUpdateStatusTextBox(
+                            //    $"Downloading {System.IO.Path.GetFileName(System.Net.WebUtility.UrlDecode(item.Enclosure.Url))}");
+                            var targetPath = $"Rush Limbaugh - {item.Title}{Path.GetExtension(item.Enclosure.Filename)}".Replace(",", "");
+                            AppendToUpdateStatusTextBox($"Downloading {targetPath}");
                             var success = await podcast.DownloadItem(item);
                             if (success)
                             {
