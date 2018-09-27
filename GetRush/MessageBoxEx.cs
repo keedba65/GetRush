@@ -54,43 +54,37 @@ namespace GetRush
 
         public static MessageBoxResult Show(Window owner, string text)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text);
         }
 
         public static MessageBoxResult Show(Window owner, string text, string caption)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text, caption);
         }
 
         public static MessageBoxResult Show(Window owner, string text, string caption, MessageBoxButton buttons)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text, caption, buttons);
         }
 
         public static MessageBoxResult Show(Window owner, string text, string caption, MessageBoxButton buttons, MessageBoxImage icon)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text, caption, buttons, icon);
         }
 
         public static MessageBoxResult Show(Window owner, string text, string caption, MessageBoxButton buttons, MessageBoxImage icon, MessageBoxResult defResult)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text, caption, buttons, icon, defResult);
         }
 
         public static MessageBoxResult Show(Window owner, string text, string caption, MessageBoxButton buttons, MessageBoxImage icon, MessageBoxResult defResult, MessageBoxOptions options)
         {
-            _owner = new WindowInteropHelper(owner).Handle;
-            Initialize();
+            Initialize(owner);
             return MessageBox.Show(owner, text, caption, buttons, icon,
                                     defResult, options);
         }
@@ -164,14 +158,20 @@ namespace GetRush
             _hHook = IntPtr.Zero;
         }
 
-        private static void Initialize()
+        private static void Initialize(Window owner = null)
         {
+            _owner = IntPtr.Zero;
+            if (owner != null && owner.WindowState != WindowState.Minimized)
+            {
+                _owner = new WindowInteropHelper(owner).Handle;
+            }
+
             if (_hHook != IntPtr.Zero)
             {
                 throw new NotSupportedException("multiple calls are not supported");
             }
 
-            if (_owner != null)
+            if (_owner != IntPtr.Zero)
             {
                 //_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
                 _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, GetCurrentThreadId());
