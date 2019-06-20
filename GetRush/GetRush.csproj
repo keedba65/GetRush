@@ -66,6 +66,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnimatedImage.cs" />
     <Compile Include="MessageBoxEx.cs" />
     <Compile Include="RushFeed.cs" />
     <Compile Include="RushPodcast.cs" />
@@ -124,6 +125,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Creative-Freedom-Shimmer-Microphone.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\AnimatedLoadingImage.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
