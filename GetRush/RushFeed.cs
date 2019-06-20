@@ -71,6 +71,11 @@ namespace GetRush
             result = TimeZoneInfo.ConvertTime(result, etZone, TimeZoneInfo.Utc);
             return result;
         }
+
+        public override string ToString()
+        {
+            return $"{this.Title} : {this.PubDate}";
+        }
     }
 
     [Serializable]

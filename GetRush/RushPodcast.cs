@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace GetRush
         public RushPodcast()
         {
             _mLogger = LogManager.GetLogger("RushPodcast");
+            //ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
 
         private void GetCredentials()
@@ -71,7 +74,7 @@ namespace GetRush
         public async Task<bool> DownloadItem(RssItem item)
         {
             var targetDir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-            var targetPath = Path.Combine(targetDir, item.Enclosure.Filename);
+            var targetPath = Path.Combine(targetDir, $"Rush Limbaugh - {item.Title}{Path.GetExtension(item.Enclosure.Filename)}").Replace(",","");
             _mLogger.Info($"Downloading from {item.Enclosure.Url} to {targetPath}");
             using (var client = new HttpClient())
             {
