@@ -46,6 +46,6 @@
                 </Grid>
             </Grid>
         </Grid>
-        <local:AnimatedImage x:Name="WaitImage" Width="200" Source="Images/AnimatedLoadingImage.gif" Visibility="Collapsed"/>
+        <local:AnimatedImage x:Name="WaitImage" Width="200" Source="Images/AnimatedLoadingImage.gif" Visibility="Collapsed" Opacity="0.5"/>
     </Grid>
 </Window>
