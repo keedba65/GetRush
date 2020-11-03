@@ -23,7 +23,7 @@ namespace GetRush
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text) ||
-                string.IsNullOrWhiteSpace(PasswordTextBox.Password)) return;
+                string.IsNullOrWhiteSpace(PasswordTextBox.Password)) { return; }
             Settings.Username = UsernameTextBox.Text;
             Settings.Password = PasswordTextBox.Password;
         }

@@ -174,6 +174,7 @@ namespace GetRush
                             {
                                 var path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
                                 OpenFolderInExplorer(path);
+                                Close();
                             }
                         }
                     }

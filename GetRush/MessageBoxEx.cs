@@ -173,7 +173,6 @@ namespace GetRush
 
             if (_owner != IntPtr.Zero)
             {
-                //_hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
                 _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, GetCurrentThreadId());
             }
         }
@@ -206,29 +205,28 @@ namespace GetRush
 
         private static void CenterWindow(IntPtr hChildWnd)
         {
-            Rectangle recChild = new Rectangle(0, 0, 0, 0);
-            bool success = GetWindowRect(hChildWnd, ref recChild);
+            var recChild = new Rectangle(0, 0, 0, 0);
+            var success = GetWindowRect(hChildWnd, ref recChild);
 
-            int width = recChild.Width - recChild.X;
-            int height = recChild.Height - recChild.Y;
+            var width = recChild.Width - recChild.X;
+            var height = recChild.Height - recChild.Y;
 
-            Rectangle recParent = new Rectangle(0, 0, 0, 0);
+            var recParent = new Rectangle(0, 0, 0, 0);
             success = GetWindowRect(_owner, ref recParent);
 
-            System.Drawing.Point ptCenter = new System.Drawing.Point(0, 0);
+            var ptCenter = new System.Drawing.Point(0, 0);
             ptCenter.X = recParent.X + ((recParent.Width - recParent.X) / 2);
             ptCenter.Y = recParent.Y + ((recParent.Height - recParent.Y) / 2);
 
 
-            System.Drawing.Point ptStart = new System.Drawing.Point(0, 0);
+            var ptStart = new System.Drawing.Point(0, 0);
             ptStart.X = (ptCenter.X - (width / 2));
             ptStart.Y = (ptCenter.Y - (height / 2));
 
             ptStart.X = (ptStart.X < 0) ? 0 : ptStart.X;
             ptStart.Y = (ptStart.Y < 0) ? 0 : ptStart.Y;
 
-            int result = MoveWindow(hChildWnd, ptStart.X, ptStart.Y, width,
-                                    height, false);
+            var result = MoveWindow(hChildWnd, ptStart.X, ptStart.Y, width, height, false);
         }
     }
 }

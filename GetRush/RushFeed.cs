@@ -39,8 +39,8 @@ namespace GetRush
                 var result = DateTime.MinValue;
                 var bHasUtc = PubDateText.Contains("UTC");
                 var bHasPzzzz = PubDateText.Contains("+0000");
-                if (bHasUtc) result = ConvertPubDateUtcFormat();
-                else if (bHasPzzzz) result = ConvertPubDatePzzzzFormat();
+                if (bHasUtc) { result = ConvertPubDateUtcFormat(); }
+                else if (bHasPzzzz) { result = ConvertPubDatePzzzzFormat(); }
                 return result;
              }
         }
@@ -59,7 +59,7 @@ namespace GetRush
             var enUs = new CultureInfo("en-US");
             const string dtFormat = "ddd, d MMM yyyy hh:mm:ss UTC";
             var succeeded = DateTime.TryParseExact(PubDateText, dtFormat, enUs, DateTimeStyles.AllowWhiteSpaces ,out var result);
-            if (!succeeded) return DateTime.MinValue;
+            if (!succeeded) { return DateTime.MinValue; }
             // Rush timestamp is actually 1 hour after the end of the show (e.g. 3:00 pm is given as 4:00)
             // Adjust to end of the show (Rush shows are noon to 3pm EST (12:00:00-15:00:00))
             result -= TimeSpan.FromHours(1);

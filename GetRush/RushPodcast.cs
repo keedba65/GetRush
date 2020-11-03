@@ -37,7 +37,7 @@ namespace GetRush
         public async Task<string> GetPodcast()
         {
             GetCredentials();
-            if (string.IsNullOrWhiteSpace(_sUsername) || string.IsNullOrWhiteSpace(_sPassword)) return "";
+            if (string.IsNullOrWhiteSpace(_sUsername) || string.IsNullOrWhiteSpace(_sPassword)) { return ""; }
 
             using (var client = new HttpClient())
             {
